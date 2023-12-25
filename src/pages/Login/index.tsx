@@ -1,34 +1,44 @@
-import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Form, message } from 'antd';
 import './index.less'
 import { deepClone } from '@/utils/objectUtils/deepClone';
 import { userLogin, userRegister } from './service';
 import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
+import { setIsLogin } from '@/redux/features/isLogin/isLoginSlice';
+import { useAppDispatch } from '@/redux/hooks';
 
 type FieldType = {
-  name?: string;
+  username?: string;
   password?: string;
-  email?: string;
 };
 
 const Login = () => {
   const navigate = useNavigate();
+  const switcherRef = useRef<any>();
+  const dispatch = useAppDispatch();
 
   const onLoginFinish = (values: any) => {
     const formData = deepClone(values);
     userLogin(formData).then((res: any) => {
-      message.success("登录成功！");
-      const { access_token, refresh_token } = res.data.data;
-      localStorage.setItem('access_token', access_token);
-      localStorage.setItem('refresh_token', refresh_token);
-      navigate('/home');
+      if (res.data.code === 0) {
+        message.success("登录成功！");
+        // const { access_token, refresh_token } = res.data.data;
+        // localStorage.setItem('access_token', access_token);
+        // localStorage.setItem('refresh_token', refresh_token);
+        dispatch(setIsLogin(true));
+        navigate('/home');
+      }
     })
   }
 
   const onRegisterFinish = (values: any) => {
     const formData = deepClone(values);
-    userRegister(formData).then(() => {
-      message.success("注册成功！马上登录吧！");
+    userRegister(formData).then((res: any) => {
+      if (res.data.code === 0) {
+        message.success("注册成功！马上登录吧！");
+        switcherRef.current.click();
+      }
     })
   };
 
@@ -40,11 +50,11 @@ const Login = () => {
             <div className="flex-auto text-center align-self-center py-5">
               <div className="section pb-5 pt-5 pt-sm-2 text-center">
                 <h6 className="mb-0 pb-3">
-                  <span>登录 </span>
+                  <span>登录</span>
                   <span>注册</span>
                 </h6>
                 <input className="checkbox" type="checkbox" id="reg-log" name="reg-log" />
-                <label htmlFor="reg-log"></label>
+                <label ref={switcherRef} htmlFor="reg-log"></label>
 
                 <div className="card-3d-wrap mx-auto">
                   <div className="card-3d-wrapper">
@@ -59,7 +69,7 @@ const Login = () => {
                             autoComplete="off"
                           >
                             <Form.Item<FieldType>
-                              name="name"
+                              name="username"
                               rules={[{ required: true, message: '请输入你的用户名！' }]}
                               style={{
                                 marginBottom: '10px',
@@ -115,7 +125,7 @@ const Login = () => {
                             autoComplete="off"
                           >
                             <Form.Item<FieldType>
-                              name="name"
+                              name="username"
                               rules={[{ required: true, message: '请输入你的用户名！' }]}
                               style={{
                                 marginBottom: '5px',
@@ -125,21 +135,6 @@ const Login = () => {
                                 <input type="text" name="logname" className="form-style" placeholder="你的用户名" id="logname"
                                   autoComplete="off" />
                                 <i className="input-icon uil uil-user"><UserOutlined /></i>
-                              </div>
-                            </Form.Item>
-
-                            <Form.Item<FieldType>
-
-                              name="email"
-                              rules={[{ required: true, message: '请输入你的邮箱！' }]}
-                              style={{
-                                marginBottom: '5px',
-                              }}
-                            >
-                              <div className="form-group !mt-2">
-                                <input type="email" name="logemail" className="form-style" placeholder="你的邮箱" id="logemail"
-                                  autoComplete="off" />
-                                <i className="input-icon uil uil-at"><MailOutlined /></i>
                               </div>
                             </Form.Item>
 

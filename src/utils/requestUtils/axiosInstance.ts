@@ -1,36 +1,25 @@
+import { setIsLogin } from "@/redux/features/isLogin/isLoginSlice";
+import { useAppDispatch } from "@/redux/hooks";
 import { message } from "antd";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 interface PendingTask {
   config: AxiosRequestConfig
   resolve: Function
-  uUrl: string
 }
 let refreshing = false;
 const queue: PendingTask[] = [];
 
 // 创建自定义axios实例
 const axiosInstance = axios.create({
-  // baseURL: 'http://localhost:8520/',
+  // baseURL: 'http://47.236.109.159:80808520/',
   timeout: 3000
 });
-
-// 拼接请求的url和方法，同样的url+方法可以视为相同的请求
-const getUUrl = (config: any) => {
-  return `${config.url}_${config.method}`
-}
 
 // 设置响应拦截器
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     // const { data } = response || { data: {} };
-    // return Promise.resolve(data);
-    // 请求成功后清除队列中对应的请求
-    for (let i = 0; i < queue.length; i++) {
-      if (getUUrl(response.config) === queue[i].uUrl) {
-        queue.splice(i, 1);
-      }
-    }
     return Promise.resolve(response);
   },
   (error: any) => {
@@ -38,11 +27,9 @@ axiosInstance.interceptors.response.use(
 
     if (refreshing) {
       return new Promise((resolve) => {
-        const uUrl = getUUrl(config)
         queue.push({
           config,
           resolve,
-          uUrl,
         });
       });
     }
@@ -59,11 +46,15 @@ axiosInstance.interceptors.response.use(
             resolve(axiosInstance(config))
           })
 
+          // 清空队列
+          queue.length = 0
+
           return axiosInstance(config);
         } else {
           message.error(data || '登录过期，请重新登录');
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
+          dispatchLogin(false);
           return error.response;
         }
       });
@@ -95,6 +86,11 @@ const refreshToken = () => {
     localStorage.setItem('refresh_token', res.data.data.refreshToken);
     return res;
   });
+}
+
+const dispatchLogin = (isLogin: boolean) => {
+  const dispatch = useAppDispatch();
+  dispatch(setIsLogin(isLogin));
 }
 
 export { axiosInstance }

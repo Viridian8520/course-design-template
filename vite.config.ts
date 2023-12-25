@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8520,
+    port: 8525,
     open: true,
     host: true,
     proxy: {
@@ -22,4 +22,9 @@ export default defineConfig({
       },
     },
   },
+  css: {
+    modules: {
+      localsConvention: 'camelCaseOnly',  // 配置css module驼峰式转换
+    },
+  }
 })
