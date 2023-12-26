@@ -5,22 +5,29 @@ import { App as AntdApp } from 'antd'
 import { BrowserRouter } from 'react-router-dom'
 import { store } from '@/redux/store.ts'
 import { Provider } from 'react-redux'
-import { ConfigProvider, ThemeConfig, theme } from 'antd'
+import { ConfigProvider, ThemeConfig } from 'antd'
 import '@/css/index.less'
 import { FC } from 'react'
+import zhCN from 'antd/locale/zh_CN';
 
 const RootNode: FC = () => {
 
   // 定制主题
   const globalTheme: ThemeConfig = {
     token: {
-      colorPrimary: '#2D4FDE',
+      colorPrimary: '#4e6dd6',
     },
-    algorithm: theme.darkAlgorithm,
+    // algorithm: theme.darkAlgorithm,
+    // components: {
+    //   Button: {
+    //     colorPrimary: '#4e6dd6',
+    //     algorithm: true,
+    //   },
+    // },
   }
 
   return (
-    <ConfigProvider theme={globalTheme}>
+    <ConfigProvider locale={zhCN} theme={globalTheme}>
       <AntdApp style={{ height: '100%' }}>
         <Provider store={store}>
           <BrowserRouter>

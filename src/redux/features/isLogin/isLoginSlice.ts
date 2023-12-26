@@ -4,7 +4,7 @@ import { isLoginState } from './type';
 
 // 使用该类型定义初始 state
 const initialState: isLoginState = {
-  status: true,
+  status: !!localStorage.getItem('token'),
 }
 
 export const isLoginSlice = createSlice({

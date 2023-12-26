@@ -29,7 +29,7 @@ function App() {
         <Route
           path={'/home'}
           element={
-            <Navigate to={isLogin ? '/home/company' : '/login'} />
+            <Navigate to={isLogin ? '/home/goods' : '/login'} />
           }
         />
         <Route

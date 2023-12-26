@@ -1,64 +1,95 @@
 import { useEffect, useRef, useState } from 'react';
-import { Card, Table, Button, Spin } from 'antd';
-import AddCompanyModal from "./AddCompanyModal"
-import UpdateCompanyModal from "./UpdateCompanyModal"
-import { deleteCompany, deleteDepartment, deleteStaff, getCompanyList, getDepartmentList, getStaffList } from './service';
-import { useLocation, useNavigate } from 'react-router-dom';
-import AddDepartmentModal from './AddDepartmentModal';
-import UpdateDepartmentModal from './UpdateDepartmentModal';
-import AddStaffModal from './AddStaffModal';
-import UpdateStaffModal from './UpdateStaffModal';
+import { Card, Table, Button, Spin, Image, Input, Select } from 'antd';
+import AddGoodsModal from "./AddGoodsModal"
+import UpdateGoodsModal from "./UpdateGoodsModal"
+import { deleteGoods, getCategoryList, getGoodsList } from './service';
+import { useLocation } from 'react-router-dom';
 import useCallbackState from '@/hooks/useCallbackState';
 // import useForceUpdate from '@/hooks/useForceUpdate';
 
 function List() {
   const [dataSource, setDataSource] = useState([]); // 设置表格内容
-  const [isAddCompanyModalVisible, setIsAddCompanyModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
-  const [isUpdateCompanyModalVisible, setIsUpdateCompanyModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
-  const [isAddDepartmentModalVisible, setIsAddDepartmentModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
-  const [isUpdateDepartmentModalVisible, setIsUpdateDepartmentModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
-  const [isAddStaffModalVisible, setIsAddStaffModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
-  const [isUpdateStaffModalVisible, setIsUpdateStaffModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
-  const [detailData, setDetailData] = useState<{ [propName: string]: any }>(); // 要展示的企业信息
+  const [isAddGoodsModalVisible, setIsAddGoodsModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
+  const [isUpdateGoodsModalVisible, setIsUpdateGoodsModalVisible] = useState(false); // 控制显示窗口的显示与隐藏
+  const [detailData, setDetailData] = useState<{ [propName: string]: any }>(); // 要展示的商品信息
   const [loading, setLoading] = useState(false);// 设置加载状态
-  const navigate = useNavigate();
   const { pathname } = useLocation(); // 当前路由
   let finalPathname = pathname.split('/')[pathname.split('/').length - 1];
   const [status, setStatus] = useCallbackState(finalPathname);
   const currentStatus = useRef(status);
+  const [qualityOptions, setQualityOptions] = useState<Array<any>>();
   // const forceUpdate = useForceUpdate();
 
   const updateList = () => {
     setLoading(true);
-    console.log(currentStatus.current);
-    if (currentStatus.current === "company") {
-      getCompanyList().then((res) => {
+    if (currentStatus.current === "goods") {
+      getGoodsList().then((res) => {
         if (res) {
           setLoading(false);
-          setDataSource(res.data.data);
-        }
-      });
-    } else if (currentStatus.current === "department") {
-      const companyId = parseInt(pathname.split('/')[pathname.split('/').length - 2])
-      getDepartmentList(companyId).then((res) => {
-        if (res) {
-          setLoading(false);
-          setDataSource(res.data.data);
-        }
-      });
-    } else if (currentStatus.current === "staff") {
-      const deptId = parseInt(pathname.split('/')[pathname.split('/').length - 2])
-      getStaffList(deptId).then((res) => {
-        if (res) {
-          setLoading(false);
-          setDataSource(res.data.data);
+          setDataSource(res.data.data.data);
         }
       });
     }
   }
 
+  const onSearch = (value: string) => {
+    if (value) {
+      setLoading(true);
+      if (currentStatus.current === "goods") {
+        getGoodsList({
+          searchText: value,
+        }).then((res) => {
+          if (res) {
+            setLoading(false);
+            setDataSource(res.data.data.data);
+          }
+        });
+      }
+    } else {
+      updateList();
+    }
+  }
+
+  const onClear = () => {
+    updateList();
+  }
+
+  const onSelect = (value: number) => {
+    if (value) {
+      setLoading(true);
+      if (currentStatus.current === "goods") {
+        getGoodsList({
+          categoryId: value,
+        }).then((res) => {
+          if (res) {
+            setLoading(false);
+            setDataSource(res.data.data.data);
+          }
+        });
+      }
+    } else {
+      updateList();
+    }
+  }
+
+  const getQualityOptions = (data: Array<any>) => {
+    const options: { label: any; value: any; }[] = [];
+    data.forEach(item => {
+      options.push({
+        label: item.name,
+        value: item.id,
+      });
+    })
+    return options;
+  }
+
   useEffect(() => {
     updateList();
+    getCategoryList().then(res => {
+      if (res) {
+        setQualityOptions(getQualityOptions(res.data.data));
+      }
+    })
   }, []);
 
   useEffect(() => {
@@ -69,134 +100,92 @@ function List() {
     });
   }, [pathname])
 
-  const companyColumns = [
+  const goodsColumns = [
     {
       title: '序号',
       key: 'id',
       dataIndex: 'id',
     },
     {
-      title: '企业名称',
-      key: 'companyName',
-      dataIndex: 'companyName',
+      title: '商家序号',
+      key: 'userId',
+      dataIndex: 'userId',
     },
     {
-      title: '企业地址',
-      key: 'address',
-      dataIndex: 'address',
-    },
-    {
-      title: '企业类型',
-      key: 'quality',
-      dataIndex: 'quality',
-    },
-    {
-      title: '操作',
-      render: (_txt: string, record: { [propName: string]: any }, _index: number) => {
-        return <div>
-          <Button type='primary' style={{ marginRight: '10px' }} onClick={() => {
-            setIsUpdateCompanyModalVisible(true);
-            setDetailData(record);
-          }}>修改企业</Button>
-          <Button type='primary' style={{ marginRight: '10px' }} danger onClick={() => {
-            deleteCompany(record.id).then(_res => {
-              updateList();
-            });
-          }}>删除企业</Button>
-          <Button type='primary' style={{ marginRight: '10px' }} onClick={() => {
-            // setStatus("department");
-            navigate(`${pathname}/${record.id}/department`);
-          }}>查看部门</Button>
-        </div>
-      },
-    },
-  ];
-
-  const departmentColumns = [
-    {
-      title: '序号',
-      key: 'id',
-      dataIndex: 'id',
-    },
-    {
-      title: '部门名称',
-      key: 'deptName',
-      dataIndex: 'deptName',
-    },
-    {
-      title: '操作',
-      render: (_txt: string, record: { [propName: string]: any }, _index: number) => {
-        return <div>
-          <Button type='primary' style={{ marginRight: '10px' }} onClick={() => {
-            setIsUpdateDepartmentModalVisible(true);
-            setDetailData(record);
-          }}>修改部门</Button>
-          <Button type='primary' style={{ marginRight: '10px' }} danger onClick={() => {
-            deleteDepartment(record.id).then(_res => {
-              updateList();
-            });
-          }}>删除部门</Button>
-          <Button type='primary' style={{ marginRight: '10px' }} onClick={() => {
-            // setStatus("staff");
-            navigate(`${pathname}/${record.id}/staff`);
-          }}>查看人员</Button>
-        </div>
-      },
-    },
-  ];
-
-  const staffColumns = [
-    {
-      title: '序号',
-      key: 'id',
-      dataIndex: 'id',
-    },
-    {
-      title: '人员名称',
+      title: '商品名称',
       key: 'name',
       dataIndex: 'name',
     },
     {
+      title: '商品描述',
+      key: 'description',
+      dataIndex: 'description',
+    },
+    {
+      title: '商品类型',
+      key: 'categoryName',
+      dataIndex: 'categoryName',
+    },
+    {
+      title: '商品图片',
+      key: 'picture',
+      dataIndex: 'picture',
+      render: (txt: string, record: { [propName: string]: any }, _index: number) => {
+        return <Image style={{ maxHeight: '150px', maxWidth: '150px' }} alt={record.name} src={txt} />
+      },
+    },
+    {
+      title: '销量',
+      key: 'buyCount',
+      dataIndex: 'buyCount',
+    },
+    {
       title: '操作',
       render: (_txt: string, record: { [propName: string]: any }, _index: number) => {
         return <div>
-          <Button type='primary' style={{ marginRight: '10px' }} onClick={() => {
-            setIsUpdateStaffModalVisible(true);
+          <Button type='primary' style={{ margin: '5px' }} onClick={() => {
+            setIsUpdateGoodsModalVisible(true);
             setDetailData(record);
-          }}>修改人员</Button>
-          <Button type='primary' style={{ marginRight: '10px' }} danger onClick={() => {
-            deleteStaff(record.id).then(_res => {
+          }}>修改</Button>
+          <Button type='primary' style={{ margin: '5px' }} danger onClick={() => {
+            deleteGoods(record.id).then(_res => {
               updateList();
             });
-          }}>删除人员</Button>
+          }}>删除</Button>
         </div>
       },
     },
   ];
 
-
   return (
     <Card
-      title={currentStatus.current === "company" ?
-        "企业信息" :
-        currentStatus.current === "department" ?
-          "部门信息" : currentStatus.current === "staff" ?
-            "人员信息" : "其他信息"}
+      title={currentStatus.current === "goods" ? "商品信息" : "其他信息"}
       extra={
         <>
-          <Button type='primary' onClick={() => {
-            if (currentStatus.current === "company") {
-              setIsAddCompanyModalVisible(true);
-            } else if (currentStatus.current === "department") {
-              setIsAddDepartmentModalVisible(true);
-            } else if (currentStatus.current === "staff") {
-              setIsAddStaffModalVisible(true);
-            }
-          }}>{currentStatus.current === "company" ?
-            "新增企业" :
-            currentStatus.current === "department" ?
-              "新增部门" : currentStatus.current === "staff" ?
-                "新增人员" : "新增其他"}</Button>
+          <div style={{ display: 'flex' }}>
+            <Select
+              style={{ width: 100, marginRight: '10px' }}
+              placeholder="选择类型"
+              allowClear
+              options={qualityOptions}
+              onSelect={onSelect}
+              onClear={onClear}
+            />
+            <Input.Search
+              allowClear
+              placeholder='查询商品名称'
+              onSearch={onSearch}
+              enterButton
+              style={{ width: 200, marginRight: '10px' }}
+            />
+            <Button type='primary' onClick={() => {
+              if (currentStatus.current === "goods") {
+                setIsAddGoodsModalVisible(true);
+              }
+            }}>{currentStatus.current === "goods" ?
+              "新增商品" : "新增其他"}</Button>
+          </div>
+
         </>
       }
     >
@@ -205,21 +194,19 @@ function List() {
       >
         <Table
           rowKey="id"
-          columns={currentStatus.current === "company" ?
-            companyColumns :
-            currentStatus.current === "department" ?
-              departmentColumns : currentStatus.current === "staff" ?
-                staffColumns : undefined}
+          columns={currentStatus.current === "goods" ?
+            goodsColumns : undefined}
           dataSource={dataSource}
           bordered
+          pagination={{
+            showSizeChanger: true,
+            defaultPageSize: 5,
+            pageSizeOptions: [5, 10, 20, 50, 100],
+          }}
         />
       </Spin>
-      <AddCompanyModal isVisible={isAddCompanyModalVisible} setIsVisible={setIsAddCompanyModalVisible} updateList={updateList}></AddCompanyModal>
-      <UpdateCompanyModal isVisible={isUpdateCompanyModalVisible} setIsVisible={setIsUpdateCompanyModalVisible} updateList={updateList} data={detailData}></UpdateCompanyModal>
-      <AddDepartmentModal isVisible={isAddDepartmentModalVisible} setIsVisible={setIsAddDepartmentModalVisible} updateList={updateList}></AddDepartmentModal>
-      <UpdateDepartmentModal isVisible={isUpdateDepartmentModalVisible} setIsVisible={setIsUpdateDepartmentModalVisible} updateList={updateList} data={detailData}></UpdateDepartmentModal>
-      <AddStaffModal isVisible={isAddStaffModalVisible} setIsVisible={setIsAddStaffModalVisible} updateList={updateList}></AddStaffModal>
-      <UpdateStaffModal isVisible={isUpdateStaffModalVisible} setIsVisible={setIsUpdateStaffModalVisible} updateList={updateList} data={detailData}></UpdateStaffModal>
+      <AddGoodsModal isVisible={isAddGoodsModalVisible} setIsVisible={setIsAddGoodsModalVisible} updateList={updateList}></AddGoodsModal>
+      <UpdateGoodsModal isVisible={isUpdateGoodsModalVisible} setIsVisible={setIsUpdateGoodsModalVisible} updateList={updateList} data={detailData}></UpdateGoodsModal>
     </Card>
   );
 }

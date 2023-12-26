@@ -1,14 +1,16 @@
-import { Modal, Form, Input, Button, Select, message } from 'antd';
-import { addCompany, getQualityList } from './service';
+import { Modal, Form, Input, Button, Select, message, theme } from 'antd';
 import { useEffect, useState } from 'react';
+import { getCategoryList, updateGoods } from './service';
 
-export default function AddCompanyModal(props: { [propName: string]: any }) {
+export default function UpdateExpModal(props: { [propName: string]: any }) {
 
-  const { isVisible, setIsVisible, updateList } = props;
+  const { isVisible, setIsVisible, updateList, data } = props;
+  const [form] = Form.useForm();
   const [qualityOptions, setQualityOptions] = useState<Array<any>>();
+  const { token } = theme.useToken();
 
   useEffect(() => {
-    getQualityList().then(res => {
+    getCategoryList().then(res => {
       if (res) {
         setQualityOptions(getQualityOptions(res.data.data));
       }
@@ -19,18 +21,30 @@ export default function AddCompanyModal(props: { [propName: string]: any }) {
     const options: { label: any; value: any; }[] = [];
     data.forEach(item => {
       options.push({
-        label: item.quality,
-        value: item.quality,
+        label: item.name,
+        value: item.id,
       });
     })
     return options;
   }
 
+  useEffect(() => {
+    if (isVisible === true) {
+      form.setFieldsValue(data);
+    }
+  }, [data]);
+
   const onFinish = (values: { [propName: string]: any }) => {
-    addCompany(values).then(_res => {
+    let reqData: { [propName: string]: any } = {};
+    for (let key in values) {
+      if (values[key] != data[key]) {
+        reqData[key] = values[key];
+      }
+    }
+    updateGoods(reqData, data.id).then(_res => {
       updateList();
       setIsVisible(false);
-      message.success('增加企业成功！')
+      message.success('更新商品成功！')
     })
   };
 
@@ -41,13 +55,14 @@ export default function AddCompanyModal(props: { [propName: string]: any }) {
   return (
     <div>
       <Modal
-        title="新增企业"
+        title="更新商品"
         open={isVisible}
         cancelText="返回"
         footer={null}
         onCancel={() => { setIsVisible(false) }}
       >
         <Form
+          form={form}
           name="basic"
           labelCol={{
             span: 6,
@@ -63,8 +78,8 @@ export default function AddCompanyModal(props: { [propName: string]: any }) {
           autoComplete="off"
         >
           <Form.Item
-            label="企业名称"
-            name="companyName"
+            label="商品名称"
+            name="name"
             rules={[
               {
                 required: true,
@@ -75,8 +90,8 @@ export default function AddCompanyModal(props: { [propName: string]: any }) {
           </Form.Item>
 
           <Form.Item
-            label="企业地址"
-            name="address"
+            label="商品描述"
+            name="description"
             rules={[
               {
                 required: true,
@@ -87,12 +102,24 @@ export default function AddCompanyModal(props: { [propName: string]: any }) {
           </Form.Item>
 
           <Form.Item
-            name="quality"
-            label="企业类型"
-            rules={[{ required: true, message: '请选择企业类型' }]}
+            name="categoryId"
+            label="商品类型"
+            rules={[{ required: true, message: '请选择商品类型' }]}
           >
             <Select options={qualityOptions} style={{ width: 120 }}>
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="商品图片"
+            name="picture"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Input.TextArea placeholder='只支持图片url' />
           </Form.Item>
 
           <Form.Item
@@ -101,12 +128,11 @@ export default function AddCompanyModal(props: { [propName: string]: any }) {
               span: 16,
             }}
           >
-            <Button type="primary" htmlType="submit" style={{ width: '50%' }}>
+            <Button type="primary" htmlType="submit" style={{ width: '50%', backgroundColor: token.colorPrimary }}>
               提交
             </Button>
           </Form.Item>
         </Form>
-
       </Modal>
     </div>
   );

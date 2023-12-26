@@ -1,15 +1,14 @@
 import { Modal, Form, Input, Button, Select, message } from 'antd';
+import { addGoods, getCategoryList } from './service';
 import { useEffect, useState } from 'react';
-import { getQualityList, updateCompany } from './service';
 
-export default function UpdateExpModal(props: { [propName: string]: any }) {
+export default function AddGoodsModal(props: { [propName: string]: any }) {
 
-  const { isVisible, setIsVisible, updateList, data } = props;
-  const [form] = Form.useForm();
+  const { isVisible, setIsVisible, updateList } = props;
   const [qualityOptions, setQualityOptions] = useState<Array<any>>();
 
   useEffect(() => {
-    getQualityList().then(res => {
+    getCategoryList().then(res => {
       if (res) {
         setQualityOptions(getQualityOptions(res.data.data));
       }
@@ -20,30 +19,18 @@ export default function UpdateExpModal(props: { [propName: string]: any }) {
     const options: { label: any; value: any; }[] = [];
     data.forEach(item => {
       options.push({
-        label: item.quality,
-        value: item.quality,
+        label: item.name,
+        value: item.id,
       });
     })
     return options;
   }
 
-  useEffect(() => {
-    if (isVisible === true) {
-      form.setFieldsValue(data);
-    }
-  }, [data]);
-
   const onFinish = (values: { [propName: string]: any }) => {
-    let reqData: { [propName: string]: any } = {};
-    for (let key in values) {
-      if (values[key] != data[key]) {
-        reqData[key] = values[key];
-      }
-    }
-    updateCompany(reqData, data.id).then(_res => {
+    addGoods(values).then(_res => {
       updateList();
       setIsVisible(false);
-      message.success('更新企业成功！')
+      message.success('增加商品成功！')
     })
   };
 
@@ -54,14 +41,13 @@ export default function UpdateExpModal(props: { [propName: string]: any }) {
   return (
     <div>
       <Modal
-        title="更新企业"
+        title="新增商品"
         open={isVisible}
         cancelText="返回"
         footer={null}
         onCancel={() => { setIsVisible(false) }}
       >
         <Form
-          form={form}
           name="basic"
           labelCol={{
             span: 6,
@@ -77,8 +63,8 @@ export default function UpdateExpModal(props: { [propName: string]: any }) {
           autoComplete="off"
         >
           <Form.Item
-            label="企业名称"
-            name="companyName"
+            label="商品名称"
+            name="name"
             rules={[
               {
                 required: true,
@@ -89,8 +75,8 @@ export default function UpdateExpModal(props: { [propName: string]: any }) {
           </Form.Item>
 
           <Form.Item
-            label="企业地址"
-            name="address"
+            label="商品描述"
+            name="description"
             rules={[
               {
                 required: true,
@@ -101,12 +87,24 @@ export default function UpdateExpModal(props: { [propName: string]: any }) {
           </Form.Item>
 
           <Form.Item
-            name="quality"
-            label="企业类型"
-            rules={[{ required: true, message: '请选择企业类型' }]}
+            name="categoryId"
+            label="商品类型"
+            rules={[{ required: true, message: '请选择商品类型' }]}
           >
             <Select options={qualityOptions} style={{ width: 120 }}>
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="商品图片"
+            name="picture"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <Input.TextArea placeholder='只支持图片url' />
           </Form.Item>
 
           <Form.Item
@@ -120,6 +118,7 @@ export default function UpdateExpModal(props: { [propName: string]: any }) {
             </Button>
           </Form.Item>
         </Form>
+
       </Modal>
     </div>
   );

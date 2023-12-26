@@ -1,30 +1,42 @@
 import { message } from "antd";
 import axios from "axios";
 
-// 企业增删查改
-export const getCompanyList = () => {
+// 商品增删查改
+export const getGoodsList = (values?: { searchText?: string, categoryId?: number }) => {
   return axios({
-    url: 'http://47.236.109.159:8080/company/selectAll',
+    url: 'http://10.21.22.100:8569/good/list',
     method: 'get',
+    params: values ? values.searchText ? {
+      page: 1,
+      size: 999,
+      search: values.searchText,
+    } : values.categoryId ? {
+      page: 1,
+      size: 999,
+      categoryId: values.categoryId,
+    } : {
+      page: 1,
+      size: 999,
+    } : {
+      page: 1,
+      size: 999,
+    },
   }).then(res => {
     if (res && res.status === 200) {
       return res;
     } else {
       console.log(res);
     }
-  }, err => {
-    message.error("获取企业信息失败！请稍后重试！");
-    console.log(err);
   }).catch(err => {
-    message.error("获取企业信息失败！请稍后重试！");
+    message.error("获取商品信息失败！请稍后重试！");
     console.log(err)
   });
 }
 
-export const deleteCompany = (id: number) => {
+export const deleteGoods = (id: number) => {
   return axios({
-    url: `http://47.236.109.159:8080/company/delete`,
-    method: 'delete',
+    url: `http://10.21.22.100:8569/good/delete`,
+    method: 'post',
     params: {
       id: id,
     },
@@ -34,26 +46,20 @@ export const deleteCompany = (id: number) => {
     } else {
       console.log(res);
     }
-  }, err => {
-    message.error("删除企业失败！请稍后重试！");
-    console.log(err);
   }).catch(err => {
-    message.error("删除企业失败！请稍后重试！");
+    message.error("删除商品失败！请稍后重试！");
     console.log(err)
   });
 }
 
-export const addCompany = (values: { [propName: string]: any }) => {
+export const addGoods = (values: { [propName: string]: any }) => {
   return axios({
-    url: 'http://47.236.109.159:8080/company/insert',
+    url: 'http://10.21.22.100:8569/good/add',
     method: 'post',
-    data: {
-      companyName: values.companyName,
-      address: values.address,
-      quality: values.quality,
-    },
+    data: values,
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': localStorage.getItem('token'),
     },
   }).then(res => {
     if (res && res.status === 200) {
@@ -61,240 +67,39 @@ export const addCompany = (values: { [propName: string]: any }) => {
     } else {
       console.log(res);
     }
-  }, err => {
-    message.error("新增企业失败！请稍后重试！");
-    console.log(err);
   }).catch(err => {
-    message.error("新增企业失败！请稍后重试！");
+    message.error("新增商品失败！请稍后重试！");
     console.log(err)
   });
 }
 
-export const updateCompany = (values: { [propName: string]: any }, id: number) => {
+export const updateGoods = (values: { [propName: string]: any }, id: number) => {
   return axios({
-    url: `http://47.236.109.159:8080/company/update`,
-    method: 'put',
+    url: `http://10.21.22.100:8569/good/update`,
+    method: 'post',
     data: {
       id: id,
       ...values,
     },
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
+    // headers: {
+    //   'Content-Type': 'application/x-www-form-urlencoded'
+    // },
   }).then(res => {
     if (res && res.status === 200) {
       return res;
     } else {
       console.log(res);
     }
-  }, err => {
-    message.error("修改企业失败！请稍后重试！");
-    console.log(err);
   }).catch(err => {
-    message.error("修改企业失败！请稍后重试！");
+    message.error("修改商品失败！请稍后重试！");
     console.log(err)
   });
 };
 
-// 部门增删查改
-export const getDepartmentList = (id: number) => {
+// 获取商品类别map
+export const getCategoryList = () => {
   return axios({
-    url: 'http://47.236.109.159:8080/dept/selectByCompanyId',
-    method: 'get',
-    params: {
-      companyId: id,
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("获取部门信息失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("获取部门信息失败！请稍后重试！");
-    console.log(err)
-  });
-}
-
-export const deleteDepartment = (id: number) => {
-  return axios({
-    url: `http://47.236.109.159:8080/dept/delete`,
-    method: 'delete',
-    params: {
-      id: id,
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("删除部门失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("删除部门失败！请稍后重试！");
-    console.log(err)
-  });
-}
-
-export const addDepartment = (values: { [propName: string]: any }, companyId: number) => {
-  return axios({
-    url: 'http://47.236.109.159:8080/dept/insert',
-    method: 'post',
-    data: {
-      companyId: companyId,
-      deptName: values.deptName,
-    },
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("新增部门失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("新增部门失败！请稍后重试！");
-    console.log(err)
-  });
-}
-
-export const updateDepartment = (values: { [propName: string]: any }, id: number) => {
-  return axios({
-    url: `http://47.236.109.159:8080/dept/update`,
-    method: 'put',
-    data: {
-      id: id,
-      ...values,
-    },
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("修改部门失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("修改部门失败！请稍后重试！");
-    console.log(err)
-  });
-};
-
-// 人员增删查改
-export const getStaffList = (id: number) => {
-  return axios({
-    url: 'http://47.236.109.159:8080/employee/selectByDeptId',
-    method: 'get',
-    params: {
-      deptId: id,
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("获取人员信息失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("获取人员信息失败！请稍后重试！");
-    console.log(err)
-  });
-}
-
-export const deleteStaff = (id: number) => {
-  return axios({
-    url: `http://47.236.109.159:8080/employee/delete`,
-    method: 'delete',
-    params: {
-      id: id,
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("删除人员失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("删除人员失败！请稍后重试！");
-    console.log(err)
-  });
-}
-
-export const addStaff = (values: { [propName: string]: any }, companyId: number, deptId: number) => {
-  return axios({
-    url: 'http://47.236.109.159:8080/employee/insert',
-    method: 'post',
-    data: {
-      deptId: deptId,
-      companyId: companyId,
-      name: values.name,
-    },
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("新增人员失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("新增人员失败！请稍后重试！");
-    console.log(err)
-  });
-}
-
-export const updateStaff = (values: { [propName: string]: any }, id: number) => {
-  return axios({
-    url: `http://47.236.109.159:8080/employee/update`,
-    method: 'put',
-    data: {
-      id: id,
-      ...values,
-    },
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-  }).then(res => {
-    if (res && res.status === 200) {
-      return res;
-    } else {
-      console.log(res);
-    }
-  }, err => {
-    message.error("修改人员失败！请稍后重试！");
-    console.log(err);
-  }).catch(err => {
-    message.error("修改人员失败！请稍后重试！");
-    console.log(err)
-  });
-};
-
-// 获取企业类别map
-export const getQualityList = () => {
-  return axios({
-    url: 'http://47.236.109.159:8080/company/quality/selectAll',
+    url: 'http://10.21.22.100:8569/category/list',
     method: 'get',
   }).then(res => {
     if (res && res.status === 200) {
@@ -302,11 +107,8 @@ export const getQualityList = () => {
     } else {
       console.log(res);
     }
-  }, err => {
-    message.error("获取企业类别失败！请稍后重试！");
-    console.log(err);
   }).catch(err => {
-    message.error("获取企业类别失败！请稍后重试！");
+    message.error("获取商品类别失败！请稍后重试！");
     console.log(err)
   });
 }

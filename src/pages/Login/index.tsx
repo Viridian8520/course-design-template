@@ -21,11 +21,10 @@ const Login = () => {
   const onLoginFinish = (values: any) => {
     const formData = deepClone(values);
     userLogin(formData).then((res: any) => {
-      if (res.data.code === 0) {
+      if (res.data.code === 1) {
         message.success("登录成功！");
-        // const { access_token, refresh_token } = res.data.data;
-        // localStorage.setItem('access_token', access_token);
-        // localStorage.setItem('refresh_token', refresh_token);
+        const { token } = res.data.data;
+        localStorage.setItem('token', token);
         dispatch(setIsLogin(true));
         navigate('/home');
       }
@@ -35,7 +34,7 @@ const Login = () => {
   const onRegisterFinish = (values: any) => {
     const formData = deepClone(values);
     userRegister(formData).then((res: any) => {
-      if (res.data.code === 0) {
+      if (res.data.code === 1) {
         message.success("注册成功！马上登录吧！");
         switcherRef.current.click();
       }

@@ -1,33 +1,20 @@
-// 主题颜色定义
-@theme-color-primary: #06aed4;
+.Spin-Style {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-.Router-Cpn {
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  .Spin-Style {
-    // box-sizing: border-box;
-    // padding: 20px;
-    // height: 100%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .block-box {
-      position: relative;
-      width: 200px;
-      height: 200px;
-      color: @theme-color-primary;
-      font-size: 15px;
-      font-weight: 700;
-      padding-top: 120px;
-      box-sizing: border-box;
-      padding-left: 35%;
-    }
+  .block-box {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    font-size: 15px;
+    padding-top: 120px;
+    box-sizing: border-box;
+    padding-left: 35%;
   }
 }
 

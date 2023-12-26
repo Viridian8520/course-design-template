@@ -12,7 +12,7 @@ const queue: PendingTask[] = [];
 
 // 创建自定义axios实例
 const axiosInstance = axios.create({
-  // baseURL: 'http://47.236.109.159:80808520/',
+  // baseURL: 'http://10.21.22.100:85698520/',
   timeout: 3000
 });
 

@@ -17,9 +17,7 @@ const Home: FC = (): ReactElement => {
   const isLogin = useAppSelector(selectIsLogin);
 
   const exitLogin = () => {
-    // localStorage.removeItem("refresh_token");
-    // localStorage.removeItem("access_token");
-    // localStorage.removeItem("user");
+    localStorage.removeItem("token");
     dispatch(setIsLogin(false));
   }
 
@@ -31,7 +29,7 @@ const Home: FC = (): ReactElement => {
         <Sider
           style={{
             overflowY: 'auto',
-            backgroundImage: 'linear-gradient(135deg, rgb(50, 3, 68), rgb(1, 59, 44))',
+            backgroundImage: 'linear-gradient(135deg, rgb(189, 189, 255), rgb(162, 255, 255))',
           }}
           theme='dark' trigger={null} width={100}
         >
@@ -98,11 +96,11 @@ const Home: FC = (): ReactElement => {
                 <Route
                   path="/home"
                   element={
-                    <Navigate to='/home/company' />
+                    <Navigate to='/home/goods' />
                   }
                 />
                 <Route
-                  path="/home/company"
+                  path="/home/goods"
                   element={
                     isLogin ? <List /> : <PageNotFound msg="请登录后访问该页面" status="403" />
                   }
